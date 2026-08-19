@@ -17,6 +17,20 @@ object OpenItiRelease {
     private const val rawRoot = "https://raw.githubusercontent.com/OpenITI/RELEASE"
 
     fun rawUrl(path: String): String = "$rawRoot/$tag/$path"
+
+    fun contentCandidates(localPath: String): List<String> {
+        val normalizedPath = localPath.trim().trimStart('/')
+        val knownExtension = listOf(".mARkdown", ".completed", ".inProgress", ".txt")
+            .any(normalizedPath::endsWith)
+        return buildList {
+            add(normalizedPath)
+            if (!knownExtension) {
+                add("$normalizedPath.mARkdown")
+                add("$normalizedPath.completed")
+                add("$normalizedPath.inProgress")
+            }
+        }.distinct()
+    }
 }
 
 class OpenItiRepository(
@@ -198,11 +212,7 @@ class OpenItiRepository(
     }
 
     private fun openTextResponse(localPath: String): Response {
-        val candidates = if (localPath.endsWith(".mARkdown") || localPath.endsWith(".completed")) {
-            listOf(localPath)
-        } else {
-            listOf("$localPath.mARkdown", "$localPath.completed", "$localPath.inProgress")
-        }
+        val candidates = OpenItiRelease.contentCandidates(localPath)
         var lastCode = -1
         for (candidate in candidates) {
             val response = client.newCall(
@@ -212,7 +222,7 @@ class OpenItiRepository(
             lastCode = response.code
             response.close()
         }
-        throw IOException("Text request failed: HTTP $lastCode")
+        throw IOException("Text request failed for $localPath: HTTP $lastCode")
     }
 
     private fun fileNameFor(versionUri: String): String {
