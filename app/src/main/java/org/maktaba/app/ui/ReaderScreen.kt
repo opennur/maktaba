@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -88,7 +89,7 @@ fun ReaderScreen(
     var searchText by rememberSaveable { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<ReaderSearchEntity>>(emptyList()) }
     var tocOpen by rememberSaveable { mutableStateOf(false) }
-    var fontSize by rememberSaveable { mutableIntStateOf(20) }
+    var fontSize by rememberSaveable { mutableIntStateOf(17) }
     var restored by remember(versionUri) { mutableStateOf(false) }
 
     LaunchedEffect(blocks.size, progress?.position) {
@@ -155,7 +156,7 @@ fun ReaderScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         OutlinedTextField(
@@ -188,7 +189,7 @@ fun ReaderScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text("Preparing the reader...")
                 }
             }
@@ -224,22 +225,24 @@ fun ReaderScreen(
                         },
                     )
                 }
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    items(blocks, key = { it.blockId }) { block ->
-                        ReaderBlock(
-                            block = block,
-                            fontSize = fontSize,
-                            isBookmarked = block.blockId in bookmarkedIds,
-                            isRtl = isRtl,
-                            onToggleBookmark = { viewModel.toggleBookmark(versionUri, block) },
-                        )
+                SelectionContainer {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        items(blocks, key = { it.blockId }) { block ->
+                            ReaderBlock(
+                                block = block,
+                                fontSize = fontSize,
+                                isBookmarked = block.blockId in bookmarkedIds,
+                                isRtl = isRtl,
+                                onToggleBookmark = { viewModel.toggleBookmark(versionUri, block) },
+                            )
+                        }
                     }
                 }
             }
@@ -306,7 +309,7 @@ private fun SearchResults(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
@@ -322,7 +325,7 @@ private fun SearchResults(
             ) {
                 Text(
                     block?.text ?: result.text,
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier.padding(8.dp),
                     maxLines = 2,
                 )
             }
@@ -385,7 +388,7 @@ private fun ReaderBlock(
                     style = TextStyle(
                         fontFamily = FontFamily.Serif,
                         fontSize = fontSize.sp,
-                        lineHeight = (fontSize * 1.55f).sp,
+                        lineHeight = (fontSize * 1.45f).sp,
                         textDirection = if (isRtl) TextDirection.Rtl else TextDirection.Ltr,
                     ),
                     textAlign = if (isRtl) TextAlign.End else TextAlign.Start,

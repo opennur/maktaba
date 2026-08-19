@@ -8,8 +8,16 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.File
+import java.io.FilterInputStream
 import java.io.IOException
+import java.io.InputStream
 import java.security.MessageDigest
+
+data class CatalogImportProgress(
+    val bytesRead: Long,
+    val totalBytes: Long,
+    val recordsImported: Int,
+)
 
 object OpenItiRelease {
     const val tag = "v2025.1.9"
@@ -64,7 +72,9 @@ class OpenItiRepository(
 
     suspend fun catalogCount(): Int = bookDao.count()
 
-    suspend fun importCatalog() = withContext(Dispatchers.IO) {
+    suspend fun importCatalog(
+        onProgress: (CatalogImportProgress) -> Unit = {},
+    ) = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(OpenItiRelease.rawUrl(OpenItiRelease.metadataFile)).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
@@ -72,20 +82,45 @@ class OpenItiRepository(
             }
             val body = response.body ?: throw IOException("Catalog response was empty")
             val batch = ArrayList<BookVersionEntity>(500)
-            bookDao.clear()
-            OpenItiCatalogParser.parse(body.byteStream().bufferedReader(Charsets.UTF_8)).forEach { record ->
-                batch += record.toEntity()
-                if (batch.size >= 500) {
-                    bookDao.insertAll(batch.toList())
-                    batch.clear()
+            val seenVersionUris = HashSet<String>()
+            val countingInput = CountingInputStream(body.byteStream())
+            val totalBytes = body.contentLength()
+            var recordsImported = 0
+            var lastReportedBytes = -1L
+            var lastReportedAt = 0L
+
+            fun reportProgress(force: Boolean = false) {
+                val now = System.currentTimeMillis()
+                val enoughBytes = countingInput.bytesRead - lastReportedBytes >= 64 * 1024
+                val enoughTime = now - lastReportedAt >= 250
+                if (force || enoughBytes || enoughTime) {
+                    lastReportedBytes = countingInput.bytesRead
+                    lastReportedAt = now
+                    onProgress(CatalogImportProgress(countingInput.bytesRead, totalBytes, recordsImported))
+                }
+            }
+
+            onProgress(CatalogImportProgress(0, totalBytes, 0))
+            countingInput.bufferedReader(Charsets.UTF_8).use { reader ->
+                OpenItiCatalogParser.parse(reader).forEach { record ->
+                    batch += record.toEntity()
+                    seenVersionUris += record.versionUri
+                    recordsImported += 1
+                    reportProgress()
+                    if (batch.size >= 500) {
+                        bookDao.insertAll(batch.toList())
+                        batch.clear()
+                    }
                 }
             }
             if (batch.isNotEmpty()) bookDao.insertAll(batch)
+            bookDao.deleteNotIn(seenVersionUris)
+            reportProgress(force = true)
         }
     }
 
-    suspend fun ensureCatalog() {
-        if (bookDao.count() == 0) importCatalog()
+    suspend fun ensureCatalog(onProgress: (CatalogImportProgress) -> Unit = {}) {
+        if (bookDao.count() == 0) importCatalog(onProgress)
     }
 
     suspend fun getVersion(versionUri: String): BookVersionEntity? = bookDao.getVersion(versionUri)
@@ -98,6 +133,8 @@ class OpenItiRepository(
             ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
         val localPath = version.localPath ?: throw IOException("This record has no downloadable text")
         val target = File(bookDirectory, fileNameFor(versionUri))
+
+        if (version.downloaded && target.exists() && target.length() > 0L) return@withContext
 
         if (!target.exists() || target.length() == 0L) {
             val temporary = File(bookDirectory, "${target.name}.part")
@@ -228,5 +265,22 @@ class OpenItiRepository(
     private fun fileNameFor(versionUri: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(versionUri.toByteArray())
         return digest.joinToString("") { byte -> "%02x".format(byte) } + ".mARkdown"
+    }
+
+    private class CountingInputStream(input: InputStream) : FilterInputStream(input) {
+        var bytesRead: Long = 0
+            private set
+
+        override fun read(): Int {
+            val value = super.read()
+            if (value >= 0) bytesRead += 1
+            return value
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            val count = super.read(buffer, offset, length)
+            if (count > 0) bytesRead += count
+            return count
+        }
     }
 }

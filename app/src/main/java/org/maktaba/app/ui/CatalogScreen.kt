@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +48,7 @@ fun CatalogScreen(
     onBookClick: (String) -> Unit,
 ) {
     val state by viewModel.catalogState.collectAsStateWithLifecycle()
+    val importProgress by viewModel.catalogProgress.collectAsStateWithLifecycle()
     val books by viewModel.catalogBooks.collectAsStateWithLifecycle()
     val query by viewModel.searchQuery.collectAsStateWithLifecycle()
 
@@ -61,6 +64,14 @@ fun CatalogScreen(
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = viewModel::refreshCatalog,
+                        enabled = state != CatalogState.Loading,
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh catalog")
                     }
                 },
             )
@@ -80,32 +91,44 @@ fun CatalogScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 placeholder = { Text("Search titles or authors") },
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
 
             when (val currentState = state) {
                 CatalogState.Loading -> {
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                    LoadingMessage("Importing the OpenITI catalog...")
+                    val progress = if (importProgress.totalBytes > 0) {
+                        (importProgress.bytesRead.toFloat() / importProgress.totalBytes.toFloat()).coerceIn(0f, 1f)
+                    } else {
+                        null
+                    }
+                    if (progress == null) {
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                    } else {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    Text(
+                        text = "Fetched ${importProgress.recordsImported} catalog records",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                    if (books.isEmpty()) {
+                        LoadingMessage("Importing the OpenITI catalog...")
+                    } else {
+                        CatalogBookList(books, onBookClick, Modifier.weight(1f))
+                    }
                 }
-                is CatalogState.Error -> ErrorMessage(currentState.message, viewModel::retryCatalog)
+                is CatalogState.Error -> {
+                    ErrorMessage(currentState.message, viewModel::retryCatalog)
+                    if (books.isNotEmpty()) CatalogBookList(books, onBookClick, Modifier.weight(1f))
+                }
                 CatalogState.Ready -> {
                     if (books.isEmpty()) {
                         LoadingMessage(if (query.isBlank()) "No books found" else "No matching books")
                     } else {
-                        Text(
-                            text = "${books.size} books",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 6.dp),
-                        )
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            items(books, key = { it.bookUri }) { book ->
-                                BookCard(book, onClick = { onBookClick(book.bookUri) })
-                            }
-                        }
+                        CatalogBookList(books, onBookClick, Modifier.weight(1f))
                     }
                 }
             }
@@ -140,7 +163,7 @@ fun LibraryScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
             ) {
                 items(books, key = { it.bookUri }) { book ->
@@ -158,13 +181,13 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(12.dp)) {
             Text(
                 text = book.titleArabic.ifBlank { book.titleLatin.ifBlank { book.bookUri } },
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.End,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -176,7 +199,7 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
                 book.authorArabic.ifBlank { book.authorLatin },
                 maxLines = 1,
@@ -185,7 +208,7 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -209,7 +232,7 @@ private fun LoadingMessage(text: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 32.dp),
+            .padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (text.contains("Importing")) {
@@ -225,7 +248,7 @@ private fun ErrorMessage(message: String, retry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(32.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Could not load the catalog", style = MaterialTheme.typography.titleMedium)
@@ -239,4 +262,30 @@ fun formatCount(value: Int): String = when {
     value >= 1_000_000 -> "%.1fM".format(value / 1_000_000f)
     value >= 1_000 -> "%.1fK".format(value / 1_000f)
     else -> value.toString()
+}
+
+@Composable
+private fun CatalogBookList(
+    books: List<CatalogBookRow>,
+    onBookClick: (String) -> Unit,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "${books.size} books",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(books, key = { it.bookUri }) { book ->
+                BookCard(book, onClick = { onBookClick(book.bookUri) })
+            }
+        }
+    }
 }

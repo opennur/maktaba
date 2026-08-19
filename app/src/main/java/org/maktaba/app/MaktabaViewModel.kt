@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.maktaba.app.data.BookVersionEntity
 import org.maktaba.app.data.CatalogBookRow
+import org.maktaba.app.data.CatalogImportProgress
 import org.maktaba.app.data.MaktabaDatabase
 import org.maktaba.app.data.OpenItiRepository
 import org.maktaba.app.data.ReaderBlockEntity
@@ -41,10 +42,13 @@ class MaktabaViewModel(application: Application) : AndroidViewModel(application)
     private val repository = OpenItiRepository(application, database)
     private val query = MutableStateFlow("")
     private val _catalogState = MutableStateFlow<CatalogState>(CatalogState.Loading)
+    private val _catalogProgress = MutableStateFlow(CatalogImportProgress(0, 0, 0))
     private val _downloadStates = MutableStateFlow<Map<String, DownloadState>>(emptyMap())
+    private var catalogJob: Job? = null
     private val downloadJobs = mutableMapOf<String, Job>()
 
     val catalogState: StateFlow<CatalogState> = _catalogState.asStateFlow()
+    val catalogProgress: StateFlow<CatalogImportProgress> = _catalogProgress.asStateFlow()
     val downloadStates: StateFlow<Map<String, DownloadState>> = _downloadStates.asStateFlow()
     val searchQuery: StateFlow<String> = query.asStateFlow()
     val catalogBooks: StateFlow<List<CatalogBookRow>> = query
@@ -65,18 +69,28 @@ class MaktabaViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun retryCatalog() {
-        if (_catalogState.value == CatalogState.Loading) return
-        loadCatalog()
+        loadCatalog(force = true)
     }
 
-    private fun loadCatalog() {
-        viewModelScope.launch {
+    fun refreshCatalog() {
+        loadCatalog(force = true)
+    }
+
+    private fun loadCatalog(force: Boolean = false) {
+        if (catalogJob?.isActive == true) return
+        catalogJob = viewModelScope.launch {
             _catalogState.value = CatalogState.Loading
+            _catalogProgress.value = CatalogImportProgress(0, 0, 0)
             try {
-                repository.ensureCatalog()
+                val onProgress: (CatalogImportProgress) -> Unit = { progress ->
+                    _catalogProgress.value = progress
+                }
+                if (force) repository.importCatalog(onProgress) else repository.ensureCatalog(onProgress)
                 _catalogState.value = CatalogState.Ready
             } catch (error: Throwable) {
                 _catalogState.value = CatalogState.Error(error.message ?: "Could not load the OpenITI catalog")
+            } finally {
+                catalogJob = null
             }
         }
     }

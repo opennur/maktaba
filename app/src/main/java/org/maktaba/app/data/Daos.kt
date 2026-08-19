@@ -25,35 +25,34 @@ class BookDao(private val database: MaktabaDatabase) {
             sqlite.beginTransaction()
             try {
                 books.forEach { book ->
+                    val metadata = ContentValues().apply {
+                        put("version_uri", book.versionUri)
+                        put("book_uri", book.bookUri)
+                        put("language", book.language)
+                        put("subcorpus", book.subcorpus)
+                        put("uncorrected_ocr", if (book.uncorrectedOcr) 1 else 0)
+                        put("date", book.date)
+                        put("author_ar", book.authorArabic)
+                        put("author_lat", book.authorLatin)
+                        put("title_ar", book.titleArabic)
+                        put("title_lat", book.titleLatin)
+                        put("edition_info", book.editionInfo)
+                        put("source_id", book.sourceId)
+                        put("status", book.status)
+                        put("token_length", book.tokenLength)
+                        put("character_length", book.characterLength)
+                        putNullable("local_path", book.localPath)
+                        put("tags", book.tags)
+                        put("author_from_uri", book.authorFromUri)
+                        put("parts", book.parts)
+                    }
                     sqlite.insertWithOnConflict(
                         "book_versions",
                         null,
-                        ContentValues().apply {
-                            put("version_uri", book.versionUri)
-                            put("book_uri", book.bookUri)
-                            put("language", book.language)
-                            put("subcorpus", book.subcorpus)
-                            put("uncorrected_ocr", if (book.uncorrectedOcr) 1 else 0)
-                            put("date", book.date)
-                            put("author_ar", book.authorArabic)
-                            put("author_lat", book.authorLatin)
-                            put("title_ar", book.titleArabic)
-                            put("title_lat", book.titleLatin)
-                            put("edition_info", book.editionInfo)
-                            put("source_id", book.sourceId)
-                            put("status", book.status)
-                            put("token_length", book.tokenLength)
-                            put("character_length", book.characterLength)
-                            putNullable("local_path", book.localPath)
-                            put("tags", book.tags)
-                            put("author_from_uri", book.authorFromUri)
-                            put("parts", book.parts)
-                            put("downloaded", if (book.downloaded) 1 else 0)
-                            putNullable("download_path", book.downloadPath)
-                            if (book.downloadedAt == null) putNull("downloaded_at") else put("downloaded_at", book.downloadedAt)
-                        },
-                        SQLiteDatabase.CONFLICT_REPLACE,
+                        metadata,
+                        SQLiteDatabase.CONFLICT_IGNORE,
                     )
+                    sqlite.update("book_versions", metadata, "version_uri = ?", arrayOf(book.versionUri))
                 }
                 sqlite.setTransactionSuccessful()
             } finally {
@@ -70,6 +69,30 @@ class BookDao(private val database: MaktabaDatabase) {
         database.read { sqlite ->
             sqlite.rawQuery("SELECT COUNT(*) FROM book_versions", null).use { cursor ->
                 if (cursor.moveToFirst()) cursor.getInt(0) else 0
+            }
+        }
+    }
+
+    suspend fun deleteNotIn(versionUris: Set<String>) = withContext(Dispatchers.IO) {
+        if (versionUris.isEmpty()) return@withContext
+        database.write { sqlite ->
+            val staleUris = mutableListOf<String>()
+            sqlite.rawQuery("SELECT version_uri FROM book_versions", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val versionUri = cursor.getString(0)
+                    if (versionUri !in versionUris) staleUris += versionUri
+                }
+            }
+            if (staleUris.isNotEmpty()) {
+                sqlite.beginTransaction()
+                try {
+                    staleUris.forEach { versionUri ->
+                        sqlite.delete("book_versions", "version_uri = ?", arrayOf(versionUri))
+                    }
+                    sqlite.setTransactionSuccessful()
+                } finally {
+                    sqlite.endTransaction()
+                }
             }
         }
     }
@@ -122,7 +145,6 @@ class BookDao(private val database: MaktabaDatabase) {
                        OR author_ar LIKE ? OR author_lat LIKE ? OR book_uri LIKE ?
                     GROUP BY book_uri
                     ORDER BY title_ar COLLATE NOCASE ASC
-                    LIMIT 300
                 """.trimIndent()
                 sqlite.rawQuery(sql, arrayOf(query, like, like, like, like, like)).use { cursor ->
                     cursor.toList { toCatalogBook() }

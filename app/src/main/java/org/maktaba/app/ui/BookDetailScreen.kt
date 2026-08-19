@@ -2,12 +2,15 @@ package org.maktaba.app.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -74,7 +77,7 @@ fun BookDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(32.dp),
+                    .padding(20.dp),
             )
             return@Scaffold
         }
@@ -83,9 +86,9 @@ fun BookDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
         ) {
             item {
                 BookHeader(representative, versions.size)
@@ -94,7 +97,7 @@ fun BookDetailScreen(
                 Text(
                     "Available versions",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             items(versions, key = { it.versionUri }) { version ->
@@ -112,7 +115,7 @@ fun BookDetailScreen(
 @Composable
 private fun BookHeader(version: BookVersionEntity, versionCount: Int) {
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(20.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Text(
                 version.titleArabic.ifBlank { version.titleLatin.ifBlank { version.bookUri } },
                 modifier = Modifier.fillMaxWidth(),
@@ -123,16 +126,16 @@ private fun BookHeader(version: BookVersionEntity, versionCount: Int) {
             if (version.titleLatin.isNotBlank()) {
                 Text(
                     version.titleLatin,
-                    modifier = Modifier.padding(top = 6.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text(
                 version.authorArabic.ifBlank { version.authorLatin },
-                modifier = Modifier.padding(top = 14.dp),
+                modifier = Modifier.padding(top = 10.dp),
                 style = MaterialTheme.typography.titleMedium,
             )
-            HorizontalDivider(Modifier.padding(vertical = 14.dp))
+            HorizontalDivider(Modifier.padding(vertical = 10.dp))
             MetadataLine("OpenITI URI", version.bookUri)
             MetadataLine("Versions", versionCount.toString())
             MetadataLine("Release", "v2025.1.9")
@@ -146,7 +149,7 @@ private fun MetadataLine(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 3.dp),
+            .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top,
     ) {
@@ -171,14 +174,14 @@ private fun VersionCard(
     onRead: () -> Unit,
 ) {
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     if (version.downloaded) Icons.Default.CheckCircle else Icons.AutoMirrored.Filled.MenuBook,
                     contentDescription = null,
                     tint = if (version.downloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Column(Modifier.padding(start = 10.dp).weight(1f)) {
+                Column(Modifier.padding(start = 8.dp).weight(1f)) {
                     Text(version.versionUri, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text(
                         listOf(version.language, version.sourceId, version.date)
@@ -192,7 +195,7 @@ private fun VersionCard(
             if (version.editionInfo.isNotBlank()) {
                 Text(
                     version.editionInfo,
-                    modifier = Modifier.padding(top = 10.dp),
+                    modifier = Modifier.padding(top = 6.dp),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
@@ -201,7 +204,7 @@ private fun VersionCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -219,7 +222,7 @@ private fun VersionCard(
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             if (progress == null) {
-                                CircularProgressIndicator()
+                                CircularProgressIndicator(Modifier.size(24.dp))
                             } else {
                                 Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelMedium)
                                 LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(0.35f))
@@ -241,13 +244,13 @@ private fun VersionCard(
                         if (version.downloaded || state == DownloadState.Ready) {
                             Button(onClick = onRead) {
                                 Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
-                                Spacer(Modifier.padding(horizontal = 3.dp))
+                                Spacer(Modifier.width(4.dp))
                                 Text("Read")
                             }
                         } else {
                             OutlinedButton(onClick = onDownload) {
                                 Icon(Icons.Default.Download, contentDescription = null)
-                                Spacer(Modifier.padding(horizontal = 3.dp))
+                                Spacer(Modifier.width(4.dp))
                                 Text("Download")
                             }
                         }
