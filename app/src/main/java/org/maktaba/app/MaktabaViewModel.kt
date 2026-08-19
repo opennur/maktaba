@@ -1,6 +1,7 @@
 package org.maktaba.app
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -125,6 +126,17 @@ class MaktabaViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         downloadJobs[version.versionUri] = job
+    }
+
+    fun exportBook(versionUri: String, destination: Uri, onResult: (Throwable?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.exportBook(versionUri, destination)
+                onResult(null)
+            } catch (error: Throwable) {
+                onResult(error)
+            }
+        }
     }
 
     fun searchInBook(versionUri: String, text: String, onResult: (List<ReaderSearchEntity>) -> Unit) {

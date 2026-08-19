@@ -25,4 +25,12 @@ class OpenItiReleaseTest {
 
         assertEquals(listOf(path), OpenItiRelease.contentCandidates(path))
     }
+
+    @Test
+    fun createsSafeTxtExportName() {
+        assertEquals(
+            "0100Author.Book.Source001-ara1.txt",
+            OpenItiRelease.exportFileName("0100Author.Book.Source001-ara1"),
+        )
+    }
 }

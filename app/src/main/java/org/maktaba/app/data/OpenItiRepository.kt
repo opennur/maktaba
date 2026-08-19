@@ -1,6 +1,7 @@
 package org.maktaba.app.data
 
 import android.content.Context
+import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -38,6 +39,13 @@ object OpenItiRelease {
                 add("$normalizedPath.inProgress")
             }
         }.distinct()
+    }
+
+    fun exportFileName(versionUri: String): String {
+        val baseName = versionUri.substringAfterLast('/')
+            .replace(Regex("[^A-Za-z0-9._-]"), "_")
+            .trim { it == '_' || it == '.' }
+        return "${baseName.ifBlank { "book" }}.txt"
     }
 }
 
@@ -175,6 +183,22 @@ class OpenItiRepository(
         readerDao.deleteBlocks(versionUri)
         readerDao.deleteSearchRows(versionUri)
         bookDao.setDownloaded(versionUri, downloaded = false, path = null, downloadedAt = null)
+    }
+
+    suspend fun exportBook(versionUri: String, destination: Uri) = withContext(Dispatchers.IO) {
+        val version = bookDao.getVersion(versionUri)
+            ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
+        val source = version.downloadPath?.let(::File)
+            ?: throw IOException("This book has not been downloaded")
+        if (!version.downloaded || !source.isFile || source.length() == 0L) {
+            throw IOException("Downloaded text is not available")
+        }
+
+        val output = appContext.contentResolver.openOutputStream(destination, "wt")
+            ?: throw IOException("Could not open the export destination")
+        source.inputStream().buffered().use { input ->
+            output.buffered().use { bufferedOutput -> input.copyTo(bufferedOutput) }
+        }
     }
 
     suspend fun searchInBook(versionUri: String, query: String): List<ReaderSearchEntity> {
