@@ -8,13 +8,14 @@ katalog yang dapat dicari, unduhan tersimpan di cache, pembaca offline.
 
 ## Status Rilis
 
-Maktaba `0.1.0` siap dikemas untuk rilis produksi.
+Maktaba `1.0.0` siap dikemas untuk rilis produksi.
 
 - ID aplikasi: `org.maktaba.app`
 - Versi Android minimum: Android 8.0, API 26
 - SDK kompilasi dan target: 35
 - Target Java dan Kotlin: JVM 17
 - Rilis OpenITI: `v2025.1.9`
+- Build rilis menggunakan R8 dan resource shrinking.
 
 Konfigurasikan penandatanganan produksi di luar repositori sebelum
 mendistribusikan APK rilis.
@@ -30,7 +31,7 @@ mendistribusikan APK rilis.
 - Mendukung pembacaan dari kanan ke kiri untuk teks Arab, Persia, dan Turki Utsmani.
 - Menyediakan navigasi daftar isi, pengaturan ukuran huruf, dan pencarian di dalam buku.
 - Menyimpan kemajuan membaca dan bookmark.
-- Memilih dan menyalin seluruh teks pembaca.
+- Mendukung pemilihan teks biasa di pembaca.
 
 ## Jaringan dan Penyimpanan
 
@@ -53,7 +54,14 @@ Gunakan Gradle wrapper yang tersedia dari direktori root repositori:
 ```shell
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:lintDebug
+./gradlew :app:compileDebugAndroidTestKotlin
 ./gradlew :app:assembleRelease
+```
+
+Untuk emulator atau perangkat yang terhubung, jalankan instrumentation test dengan:
+
+```shell
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 Untuk membuat APK debug, jalankan:
@@ -72,14 +80,26 @@ rilis, dan verifikasi APK yang telah ditandatangani pada instalasi Android yang
 bersih. Build yang telah ditandatangani biasanya akan ditulis sebagai
 `app-release.apk`.
 
+Konfigurasi penandatanganan rilis bersifat opsional untuk build lokal. Simpan
+properti berikut di `~/.gradle/gradle.properties` milik pengguna atau di secret CI:
+
+```properties
+Maktaba_RELEASE_STORE_FILE=/absolute/path/to/maktaba-release.jks
+Maktaba_RELEASE_STORE_PASSWORD=...
+Maktaba_RELEASE_KEY_ALIAS=maktaba
+Maktaba_RELEASE_KEY_PASSWORD=...
+```
+
 ## Checklist Produksi
 
 - Perbarui `versionCode` dan `versionName` di `app/build.gradle.kts` untuk setiap rilis.
 - Konfigurasikan penandatanganan melalui properti Gradle lokal atau penyimpanan rahasia CI.
-- Jalankan perintah unit test, lint, dan build rilis di atas.
+- Jalankan unit test, lint, kompilasi instrumentation test, dan build rilis.
+- Verifikasi upgrade dengan data katalog, unduhan, bookmark, dan kemajuan yang sudah ada.
 - Verifikasi impor katalog pada peluncuran pertama dan penyegaran katalog.
-- Verifikasi unduhan, pembacaan offline, pencarian, bookmark, kemajuan, penyalinan, dan ekspor `.txt`.
+- Verifikasi unduhan, pembacaan offline, pencarian, bookmark, kemajuan, pemilihan teks.
 - Pastikan persyaratan atribusi dan distribusi untuk rilis data OpenITI telah dipenuhi.
+- Publikasikan pemberitahuan privasi dari [PRIVACY.md](PRIVACY.md) dan atribusi dari [NOTICE.md](NOTICE.md).
 
 ## Sumber Data
 
@@ -93,3 +113,5 @@ proyek sumber.
 - `app/src/main/java/org/maktaba/app/data`: jaringan OpenITI, parsing, penyimpanan SQLite, dan cache.
 - `app/src/main/java/org/maktaba/app/ui`: layar katalog, perpustakaan, detail buku, dan pembaca.
 - `app/src/test`: unit test untuk parsing katalog, perilaku URL rilis, dan parsing teks.
+- `app/src/androidTest`: instrumentation test Android untuk migrasi database.
+- `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis tanpa tanda tangan.

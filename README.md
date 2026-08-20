@@ -8,13 +8,14 @@ catalog, cached downloads, an offline reader.
 
 ## Release Status
 
-Maktaba `0.1.0` is ready for production packaging.
+Maktaba `1.0.0` is ready for production packaging.
 
 - Application ID: `org.maktaba.app`
 - Minimum Android version: Android 8.0, API 26
 - Compile and target SDK: 35
 - Java and Kotlin target: JVM 17
 - OpenITI release: `v2025.1.9`
+- Release builds use R8 and resource shrinking.
 
 Configure production signing outside the repository before distributing the
 release APK.
@@ -53,7 +54,14 @@ Use the included Gradle wrapper from the repository root:
 ```shell
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:lintDebug
+./gradlew :app:compileDebugAndroidTestKotlin
 ./gradlew :app:assembleRelease
+```
+
+For a connected emulator or device, run the instrumentation tests with:
+
+```shell
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 For a debug APK, run:
@@ -71,14 +79,26 @@ Before distribution, configure the release signing key, build the release
 variant, and verify the signed APK on a clean Android installation. A signed
 build will normally be written as `app-release.apk`.
 
+The release signing configuration is optional in local builds. Set these Gradle
+properties in a user-level `~/.gradle/gradle.properties` file or in CI secrets:
+
+```properties
+Maktaba_RELEASE_STORE_FILE=/absolute/path/to/maktaba-release.jks
+Maktaba_RELEASE_STORE_PASSWORD=...
+Maktaba_RELEASE_KEY_ALIAS=maktaba
+Maktaba_RELEASE_KEY_PASSWORD=...
+```
+
 ## Production Checklist
 
 - Update `versionCode` and `versionName` in `app/build.gradle.kts` for each release.
 - Configure signing through local Gradle properties or the CI secret store.
-- Run the unit tests, lint, and release build commands above.
+- Run unit tests, lint, instrumentation-test compilation, and the release build.
+- Verify an upgrade with existing catalog, downloads, bookmarks, and progress data.
 - Verify first-launch catalog import and catalog refresh.
 - Verify download, offline reading, search, bookmarks, progress, text selection, and the hidden 20-tap export gesture.
 - Confirm attribution and distribution requirements for the OpenITI data release.
+- Publish the privacy notice from [PRIVACY.md](PRIVACY.md) and attribution from [NOTICE.md](NOTICE.md).
 
 ## Data Source
 
@@ -92,3 +112,5 @@ attribution requirements.
 - `app/src/main/java/org/maktaba/app/data`: OpenITI networking, parsing, SQLite persistence, and caching.
 - `app/src/main/java/org/maktaba/app/ui`: Catalog, library, book details, and reader screens.
 - `app/src/test`: Unit tests for catalog parsing, release URL behavior, and text parsing.
+- `app/src/androidTest`: Android instrumentation tests for database migrations.
+- `.github/workflows/android.yml`: CI verification and unsigned release artifact build.

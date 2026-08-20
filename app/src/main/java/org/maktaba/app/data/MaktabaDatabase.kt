@@ -46,6 +46,9 @@ class MaktabaDatabase private constructor(context: Context) :
         database.execSQL("CREATE INDEX book_versions_book_uri ON book_versions(book_uri)")
         database.execSQL("CREATE INDEX book_versions_downloaded ON book_versions(downloaded)")
         database.execSQL(
+            "CREATE INDEX book_versions_downloaded_latest ON book_versions(book_uri, downloaded, downloaded_at)",
+        )
+        database.execSQL(
             """
             CREATE TABLE reader_blocks (
                 version_uri TEXT NOT NULL,
@@ -97,12 +100,7 @@ class MaktabaDatabase private constructor(context: Context) :
     }
 
     override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        database.execSQL("DROP TABLE IF EXISTS reading_progress")
-        database.execSQL("DROP TABLE IF EXISTS bookmarks")
-        database.execSQL("DROP TABLE IF EXISTS reader_search")
-        database.execSQL("DROP TABLE IF EXISTS reader_blocks")
-        database.execSQL("DROP TABLE IF EXISTS book_versions")
-        onCreate(database)
+        migrate(database, oldVersion, newVersion)
     }
 
     internal fun <T> read(block: (SQLiteDatabase) -> T): T = block(readableDatabase)
@@ -113,7 +111,18 @@ class MaktabaDatabase private constructor(context: Context) :
     }
 
     companion object {
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
+
+        internal fun migrate(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            var version = oldVersion
+            if (version < 2 && newVersion >= 2) {
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS book_versions_downloaded_latest ON book_versions(book_uri, downloaded, downloaded_at)",
+                )
+                version = 2
+            }
+            check(version <= newVersion) { "Unsupported database upgrade: $oldVersion -> $newVersion" }
+        }
 
         @Volatile
         private var instance: MaktabaDatabase? = null
