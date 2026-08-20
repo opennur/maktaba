@@ -156,7 +156,7 @@ fun ReaderScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         OutlinedTextField(
@@ -166,7 +166,7 @@ fun ReaderScreen(
                             singleLine = true,
                             placeholder = { Text("Search this book") },
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(4.dp))
                         TextButton(
                             onClick = {
                                 viewModel.searchInBook(versionUri, searchText) { searchResults = it }
@@ -189,7 +189,7 @@ fun ReaderScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text("Preparing the reader...")
                 }
             }
@@ -231,8 +231,8 @@ fun ReaderScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         items(blocks, key = { it.blockId }) { block ->
                             ReaderBlock(
@@ -262,23 +262,23 @@ private fun TableOfContents(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .heightIn(max = 260.dp),
+            .padding(horizontal = 8.dp)
+            .heightIn(max = 220.dp),
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 10.dp, vertical = 8.dp),
+                .padding(horizontal = 6.dp, vertical = 4.dp),
         ) {
             Text(
                 "Table of contents",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             )
             if (headings.isEmpty()) {
                 Text(
                     "This text has no structural headings.",
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(6.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
@@ -309,8 +309,8 @@ private fun SearchResults(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             if (results.isEmpty()) "No matches" else "${results.size} matches",
@@ -325,7 +325,7 @@ private fun SearchResults(
             ) {
                 Text(
                     block?.text ?: result.text,
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(6.dp),
                     maxLines = 2,
                 )
             }

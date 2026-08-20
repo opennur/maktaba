@@ -15,12 +15,12 @@ private val DarkColors = darkColorScheme()
 
 private val MaktabaTypography = Typography().run {
     copy(
-        headlineSmall = headlineSmall.copy(fontSize = 22.sp, lineHeight = 26.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
-        titleLarge = titleLarge.copy(fontSize = 18.sp, lineHeight = 22.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
-        titleMedium = titleMedium.copy(fontSize = 15.sp, lineHeight = 19.sp),
-        bodyLarge = bodyLarge.copy(fontSize = 15.sp, lineHeight = 23.sp),
-        bodyMedium = bodyMedium.copy(fontSize = 13.sp, lineHeight = 20.sp),
-        bodySmall = bodySmall.copy(fontSize = 12.sp, lineHeight = 18.sp),
+        headlineSmall = headlineSmall.copy(fontSize = 20.sp, lineHeight = 24.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+        titleLarge = titleLarge.copy(fontSize = 17.sp, lineHeight = 20.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+        titleMedium = titleMedium.copy(fontSize = 14.sp, lineHeight = 18.sp),
+        bodyLarge = bodyLarge.copy(fontSize = 14.sp, lineHeight = 21.sp),
+        bodyMedium = bodyMedium.copy(fontSize = 12.sp, lineHeight = 18.sp),
+        bodySmall = bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp),
         labelLarge = labelLarge.copy(fontSize = 12.sp, lineHeight = 16.sp),
         labelMedium = labelMedium.copy(fontSize = 11.sp, lineHeight = 14.sp),
         labelSmall = labelSmall.copy(fontSize = 10.sp, lineHeight = 13.sp),

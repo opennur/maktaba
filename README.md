@@ -4,7 +4,7 @@
 
 Maktaba is a production-ready Android reader for the
 [OpenITI](https://github.com/OpenITI/RELEASE) corpus. It provides a searchable
-catalog, cached downloads, an offline reader, and export to `.txt` files.
+catalog, cached downloads, an offline reader.
 
 ## Release Status
 
@@ -30,8 +30,7 @@ release APK.
 - Supports right-to-left reading for Arabic, Persian, and Ottoman Turkish texts.
 - Includes table of contents navigation, font-size controls, and in-book search.
 - Saves reading progress and bookmarks.
-- Selects and copies all reader text.
-- Exports each downloaded version as a `.txt` file through the Android document picker.
+- Supports standard text selection in the reader.
 
 ## Network and Storage
 
@@ -39,9 +38,6 @@ The first launch needs network access to import the OpenITI catalog. Refreshing
 the catalog and downloading a new book also require network access. Catalog data,
 download state, reader blocks, search indexes, bookmarks, and reading progress
 are stored locally by the app.
-
-Export uses the Android system document picker and does not require broad storage
-permissions. The exported file is a `.txt` copy of the downloaded OpenITI text.
 
 ## Requirements
 
@@ -81,7 +77,7 @@ build will normally be written as `app-release.apk`.
 - Configure signing through local Gradle properties or the CI secret store.
 - Run the unit tests, lint, and release build commands above.
 - Verify first-launch catalog import and catalog refresh.
-- Verify download, offline reading, search, bookmarks, progress, copy, and `.txt` export.
+- Verify download, offline reading, search, bookmarks, progress, text selection, and the hidden 20-tap export gesture.
 - Confirm attribution and distribution requirements for the OpenITI data release.
 
 ## Data Source

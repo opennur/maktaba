@@ -4,8 +4,7 @@
 
 Maktaba adalah aplikasi pembaca Android yang siap dikemas untuk produksi untuk
 korpus [OpenITI](https://github.com/OpenITI/RELEASE). Aplikasi ini menyediakan
-katalog yang dapat dicari, unduhan tersimpan di cache, pembaca offline, dan
-ekspor ke berkas `.txt`.
+katalog yang dapat dicari, unduhan tersimpan di cache, pembaca offline.
 
 ## Status Rilis
 
@@ -32,7 +31,6 @@ mendistribusikan APK rilis.
 - Menyediakan navigasi daftar isi, pengaturan ukuran huruf, dan pencarian di dalam buku.
 - Menyimpan kemajuan membaca dan bookmark.
 - Memilih dan menyalin seluruh teks pembaca.
-- Mengekspor setiap versi yang telah diunduh sebagai berkas `.txt` melalui pemilih dokumen Android.
 
 ## Jaringan dan Penyimpanan
 
@@ -40,10 +38,6 @@ Peluncuran pertama memerlukan akses jaringan untuk mengimpor katalog OpenITI.
 Penyegaran katalog dan pengunduhan buku baru juga memerlukan akses jaringan.
 Data katalog, status unduhan, blok pembaca, indeks pencarian, bookmark, dan
 kemajuan membaca disimpan secara lokal oleh aplikasi.
-
-Ekspor menggunakan pemilih dokumen sistem Android dan tidak memerlukan izin
-penyimpanan umum. Berkas yang diekspor adalah salinan `.txt` dari teks OpenITI
-yang telah diunduh.
 
 ## Persyaratan
 

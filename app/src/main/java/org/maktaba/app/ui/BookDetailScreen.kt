@@ -1,5 +1,8 @@
 package org.maktaba.app.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -34,7 +38,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -42,9 +50,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.maktaba.app.DownloadState
 import org.maktaba.app.MaktabaViewModel
 import org.maktaba.app.data.BookVersionEntity
+import org.maktaba.app.data.OpenItiRelease
+
+private const val SECRET_EXPORT_TAPS = 20
+private const val SECRET_TAP_TIMEOUT_MS = 600L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +72,43 @@ fun BookDetailScreen(
     val versionsFlow = remember(bookUri) { viewModel.versions(bookUri) }
     val versions by versionsFlow.collectAsStateWithLifecycle()
     val downloadStates by viewModel.downloadStates.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var pendingExportVersionUri by remember { mutableStateOf<String?>(null) }
+    var tapVersionUri by remember { mutableStateOf<String?>(null) }
+    var tapCount by remember { mutableIntStateOf(0) }
+    var tapResetJob by remember { mutableStateOf<Job?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+    ) { destination ->
+        val versionUri = pendingExportVersionUri
+        pendingExportVersionUri = null
+        if (destination != null && versionUri != null) {
+            viewModel.exportBook(versionUri, destination) { }
+        }
+    }
+
+    fun handleVersionTap(versionUri: String) {
+        tapResetJob?.cancel()
+        if (tapVersionUri != versionUri) {
+            tapVersionUri = versionUri
+            tapCount = 0
+        }
+        tapCount += 1
+        if (tapCount >= SECRET_EXPORT_TAPS) {
+            tapVersionUri = null
+            tapCount = 0
+            pendingExportVersionUri = versionUri
+            exportLauncher.launch(OpenItiRelease.exportFileName(versionUri))
+            return
+        }
+        tapResetJob = scope.launch {
+            delay(SECRET_TAP_TIMEOUT_MS)
+            if (tapVersionUri == versionUri) {
+                tapVersionUri = null
+                tapCount = 0
+            }
+        }
+    }
     val representative = versions.firstOrNull()
 
     Scaffold(
@@ -77,7 +129,7 @@ fun BookDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(20.dp),
+                    .padding(16.dp),
             )
             return@Scaffold
         }
@@ -86,9 +138,9 @@ fun BookDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(vertical = 8.dp),
         ) {
             item {
                 BookHeader(representative, versions.size)
@@ -97,7 +149,7 @@ fun BookDetailScreen(
                 Text(
                     "Available versions",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
             items(versions, key = { it.versionUri }) { version ->
@@ -106,6 +158,7 @@ fun BookDetailScreen(
                     state = downloadStates[version.versionUri] ?: DownloadState.Idle,
                     onDownload = { viewModel.download(version) },
                     onRead = { onRead(version.versionUri) },
+                    onSecretTap = { handleVersionTap(version.versionUri) },
                 )
             }
         }
@@ -172,16 +225,26 @@ private fun VersionCard(
     state: DownloadState,
     onDownload: () -> Unit,
     onRead: () -> Unit,
+    onSecretTap: () -> Unit,
 ) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = version.downloaded || state == DownloadState.Ready,
+                onClick = onSecretTap,
+            ),
+    ) {
+        Column(Modifier.padding(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     if (version.downloaded) Icons.Default.CheckCircle else Icons.AutoMirrored.Filled.MenuBook,
                     contentDescription = null,
                     tint = if (version.downloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Column(Modifier.padding(start = 8.dp).weight(1f)) {
+                Column(Modifier.padding(start = 6.dp).weight(1f)) {
                     Text(version.versionUri, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text(
                         listOf(version.language, version.sourceId, version.date)
@@ -195,7 +258,7 @@ private fun VersionCard(
             if (version.editionInfo.isNotBlank()) {
                 Text(
                     version.editionInfo,
-                    modifier = Modifier.padding(top = 6.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
@@ -204,7 +267,7 @@ private fun VersionCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {

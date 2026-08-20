@@ -1,8 +1,5 @@
 package org.maktaba.app.ui
 
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,29 +29,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.maktaba.app.CatalogState
 import org.maktaba.app.MaktabaViewModel
 import org.maktaba.app.data.CatalogBookRow
-import org.maktaba.app.data.OpenItiRelease
-
-private const val SECRET_EXPORT_TAPS = 20
-private const val SECRET_TAP_TIMEOUT_MS = 600L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +81,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 12.dp),
         ) {
             OutlinedTextField(
                 value = query,
@@ -107,7 +91,7 @@ fun CatalogScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 placeholder = { Text("Search titles or authors") },
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
             when (val currentState = state) {
                 CatalogState.Loading -> {
@@ -128,7 +112,7 @@ fun CatalogScreen(
                         text = "Fetched ${importProgress.recordsImported} catalog records",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                     if (books.isEmpty()) {
                         LoadingMessage("Importing the OpenITI catalog...")
@@ -160,48 +144,6 @@ fun LibraryScreen(
     onBookClick: (String) -> Unit,
 ) {
     val books by viewModel.downloadedBooks.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var pendingExportBookUri by remember { mutableStateOf<String?>(null) }
-    var tapBookUri by remember { mutableStateOf<String?>(null) }
-    var tapCount by remember { mutableIntStateOf(0) }
-    var tapResetJob by remember { mutableStateOf<Job?>(null) }
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("text/plain"),
-    ) { destination ->
-        val bookUri = pendingExportBookUri
-        pendingExportBookUri = null
-        if (destination != null && bookUri != null) {
-            viewModel.exportDownloadedBook(bookUri, destination) { error ->
-                val message = if (error == null) "Book exported" else "Export failed: ${error.message}"
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    fun handleLibraryTap(bookUri: String) {
-        tapResetJob?.cancel()
-        if (tapBookUri != bookUri) {
-            tapBookUri = bookUri
-            tapCount = 0
-        }
-        tapCount += 1
-        if (tapCount >= SECRET_EXPORT_TAPS) {
-            tapBookUri = null
-            tapCount = 0
-            pendingExportBookUri = bookUri
-            exportLauncher.launch(OpenItiRelease.exportFileName(bookUri))
-            return
-        }
-        tapResetJob = scope.launch {
-            delay(SECRET_TAP_TIMEOUT_MS)
-            if (tapBookUri == bookUri) {
-                tapBookUri = null
-                tapCount = 0
-                onBookClick(bookUri)
-            }
-        }
-    }
 
     Scaffold(
         modifier = modifier,
@@ -213,19 +155,19 @@ fun LibraryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(32.dp),
+                    .padding(20.dp),
             )
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
             ) {
                 items(books, key = { it.bookUri }) { book ->
-                    BookCard(book, onClick = { handleLibraryTap(book.bookUri) })
+                    BookCard(book, onClick = { onBookClick(book.bookUri) })
                 }
             }
         }
@@ -239,13 +181,13 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
     ) {
-        Column(Modifier.padding(12.dp)) {
+        Column(Modifier.padding(8.dp)) {
             Text(
                 text = book.titleArabic.ifBlank { book.titleLatin.ifBlank { book.bookUri } },
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.End,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -257,7 +199,7 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 book.authorArabic.ifBlank { book.authorLatin },
                 maxLines = 1,
@@ -266,7 +208,7 @@ private fun BookCard(book: CatalogBookRow, onClick: () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 6.dp),
+                    .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -290,7 +232,7 @@ private fun LoadingMessage(text: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp),
+            .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (text.contains("Importing")) {
@@ -306,7 +248,7 @@ private fun ErrorMessage(message: String, retry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Could not load the catalog", style = MaterialTheme.typography.titleMedium)
@@ -333,13 +275,13 @@ private fun CatalogBookList(
             text = "${books.size} books",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
+            modifier = Modifier.padding(bottom = 2.dp),
         )
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items(books, key = { it.bookUri }) { book ->
                 BookCard(book, onClick = { onBookClick(book.bookUri) })
