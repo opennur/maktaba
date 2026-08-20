@@ -20,6 +20,7 @@ import org.maktaba.app.data.BookVersionEntity
 import org.maktaba.app.data.CatalogBookRow
 import org.maktaba.app.data.CatalogImportProgress
 import org.maktaba.app.data.MaktabaDatabase
+import org.maktaba.app.data.MaktabaRepository
 import org.maktaba.app.data.OpenItiRepository
 import org.maktaba.app.data.ReaderBlockEntity
 import org.maktaba.app.data.ReaderSearchEntity
@@ -38,9 +39,14 @@ sealed interface DownloadState {
 }
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-class MaktabaViewModel(application: Application) : AndroidViewModel(application) {
-    private val database = MaktabaDatabase.get(application)
-    private val repository = OpenItiRepository(application, database)
+class MaktabaViewModel(
+    application: Application,
+    private val repository: MaktabaRepository,
+) : AndroidViewModel(application) {
+    constructor(application: Application) : this(
+        application,
+        OpenItiRepository(application, MaktabaDatabase.get(application)),
+    )
     private val query = MutableStateFlow("")
     private val _catalogState = MutableStateFlow<CatalogState>(CatalogState.Loading)
     private val _catalogProgress = MutableStateFlow(CatalogImportProgress(0, 0, 0))

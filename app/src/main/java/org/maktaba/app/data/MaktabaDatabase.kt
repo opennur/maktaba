@@ -5,8 +5,10 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class MaktabaDatabase private constructor(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "maktaba.db", null, DATABASE_VERSION) {
+class MaktabaDatabase internal constructor(
+    context: Context,
+    databaseName: String = DATABASE_NAME,
+) : SQLiteOpenHelper(context.applicationContext, databaseName, null, DATABASE_VERSION) {
     val changes = MutableStateFlow(0L)
 
     val bookDao = BookDao(this)
@@ -111,6 +113,7 @@ class MaktabaDatabase private constructor(context: Context) :
     }
 
     companion object {
+        private const val DATABASE_NAME = "maktaba.db"
         private const val DATABASE_VERSION = 2
 
         internal fun migrate(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

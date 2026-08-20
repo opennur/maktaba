@@ -115,3 +115,4 @@ proyek sumber.
 - `app/src/test`: unit test untuk parsing katalog, perilaku URL rilis, dan parsing teks.
 - `app/src/androidTest`: instrumentation test Android untuk migrasi database.
 - `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis tanpa tanda tangan.
+- `TESTING.md`: panduan test JVM lokal, Robolectric, ViewModel, parser, dan repository.

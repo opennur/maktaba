@@ -114,3 +114,4 @@ attribution requirements.
 - `app/src/test`: Unit tests for catalog parsing, release URL behavior, and text parsing.
 - `app/src/androidTest`: Android instrumentation tests for database migrations.
 - `.github/workflows/android.yml`: CI verification and unsigned release artifact build.
+- `TESTING.md`: Local JVM, Robolectric, ViewModel, parser, and repository test guide.

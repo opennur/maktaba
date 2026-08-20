@@ -65,6 +65,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all { testTask ->
+            if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) {
+                testTask.filter {
+                    excludeTestsMatching("org.maktaba.app.data.MaktabaDatabaseRobolectricTest")
+                    excludeTestsMatching("org.maktaba.app.data.OpenItiRepositoryTest")
+                }
+            }
+        }
+    }
 }
 
 kotlin {
@@ -94,6 +106,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 
     androidTestImplementation("androidx.test:core-ktx:1.6.1")

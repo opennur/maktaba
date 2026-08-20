@@ -53,7 +53,8 @@ class OpenItiRepository(
     context: Context,
     private val database: MaktabaDatabase,
     private val client: OkHttpClient = OkHttpClient.Builder().build(),
-) {
+    private val urlForPath: (String) -> String = OpenItiRelease::rawUrl,
+) : MaktabaRepository {
     private val appContext = context.applicationContext
     private val bookDirectory = File(appContext.filesDir, "openiti-books")
     private val bookDao = database.bookDao
@@ -65,25 +66,25 @@ class OpenItiRepository(
         bookDirectory.mkdirs()
     }
 
-    fun observeCatalog(query: String): Flow<List<CatalogBookRow>> = bookDao.observeCatalog(query)
+    override fun observeCatalog(query: String): Flow<List<CatalogBookRow>> = bookDao.observeCatalog(query)
 
-    fun observeDownloadedBooks(): Flow<List<CatalogBookRow>> = bookDao.observeDownloadedBooks()
+    override fun observeDownloadedBooks(): Flow<List<CatalogBookRow>> = bookDao.observeDownloadedBooks()
 
-    fun observeVersions(bookUri: String): Flow<List<BookVersionEntity>> = bookDao.observeVersions(bookUri)
+    override fun observeVersions(bookUri: String): Flow<List<BookVersionEntity>> = bookDao.observeVersions(bookUri)
 
-    fun observeBlocks(versionUri: String): Flow<List<ReaderBlockEntity>> = readerDao.observeBlocks(versionUri)
+    override fun observeBlocks(versionUri: String): Flow<List<ReaderBlockEntity>> = readerDao.observeBlocks(versionUri)
 
-    fun observeBookmarks(versionUri: String): Flow<List<BookmarkEntity>> =
+    override fun observeBookmarks(versionUri: String): Flow<List<BookmarkEntity>> =
         bookmarkDao.observeForVersion(versionUri)
 
-    fun observeProgress(versionUri: String): Flow<ReadingProgressEntity?> = progressDao.observe(versionUri)
+    override fun observeProgress(versionUri: String): Flow<ReadingProgressEntity?> = progressDao.observe(versionUri)
 
     suspend fun catalogCount(): Int = bookDao.count()
 
-    suspend fun importCatalog(
-        onProgress: (CatalogImportProgress) -> Unit = {},
+    override suspend fun importCatalog(
+        onProgress: (CatalogImportProgress) -> Unit,
     ) = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(OpenItiRelease.rawUrl(OpenItiRelease.metadataFile)).build()
+        val request = Request.Builder().url(urlForPath(OpenItiRelease.metadataFile)).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 throw IOException("Catalog request failed: HTTP ${response.code}")
@@ -127,15 +128,15 @@ class OpenItiRepository(
         }
     }
 
-    suspend fun ensureCatalog(onProgress: (CatalogImportProgress) -> Unit = {}) {
+    override suspend fun ensureCatalog(onProgress: (CatalogImportProgress) -> Unit) {
         if (bookDao.count() == 0) importCatalog(onProgress)
     }
 
     suspend fun getVersion(versionUri: String): BookVersionEntity? = bookDao.getVersion(versionUri)
 
-    suspend fun downloadBook(
+    override suspend fun downloadBook(
         versionUri: String,
-        onProgress: (bytesRead: Long, totalBytes: Long) -> Unit = { _, _ -> },
+        onProgress: (bytesRead: Long, totalBytes: Long) -> Unit,
     ) = withContext(Dispatchers.IO) {
         val version = bookDao.getVersion(versionUri)
             ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
@@ -185,13 +186,13 @@ class OpenItiRepository(
         bookDao.setDownloaded(versionUri, downloaded = false, path = null, downloadedAt = null)
     }
 
-    suspend fun exportBook(versionUri: String, destination: Uri) = withContext(Dispatchers.IO) {
+    override suspend fun exportBook(versionUri: String, destination: Uri) = withContext(Dispatchers.IO) {
         val version = bookDao.getVersion(versionUri)
             ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
         exportVersion(version, destination)
     }
 
-    suspend fun exportDownloadedBook(bookUri: String, destination: Uri) = withContext(Dispatchers.IO) {
+    override suspend fun exportDownloadedBook(bookUri: String, destination: Uri) = withContext(Dispatchers.IO) {
         val version = bookDao.getDownloadedVersion(bookUri)
             ?: throw IOException("No downloaded version is available for this book")
         exportVersion(version, destination)
@@ -211,13 +212,13 @@ class OpenItiRepository(
         }
     }
 
-    suspend fun searchInBook(versionUri: String, query: String): List<ReaderSearchEntity> {
+    override suspend fun searchInBook(versionUri: String, query: String): List<ReaderSearchEntity> {
         val matchQuery = TextNormalizer.toMatchQuery(query)
         if (matchQuery.isBlank()) return emptyList()
         return readerDao.search(versionUri, matchQuery)
     }
 
-    suspend fun toggleBookmark(versionUri: String, block: ReaderBlockEntity) {
+    override suspend fun toggleBookmark(versionUri: String, block: ReaderBlockEntity) {
         val existing = bookmarkDao.find(versionUri, block.blockId)
         if (existing == null) {
             bookmarkDao.insert(
@@ -232,7 +233,7 @@ class OpenItiRepository(
         }
     }
 
-    suspend fun saveProgress(versionUri: String, block: ReaderBlockEntity, position: Int, percent: Float) {
+    override suspend fun saveProgress(versionUri: String, block: ReaderBlockEntity, position: Int, percent: Float) {
         progressDao.save(
             ReadingProgressEntity(
                 versionUri = versionUri,
@@ -287,7 +288,7 @@ class OpenItiRepository(
         var lastCode = -1
         for (candidate in candidates) {
             val response = client.newCall(
-                Request.Builder().url(OpenItiRelease.rawUrl(candidate)).build(),
+                Request.Builder().url(urlForPath(candidate)).build(),
             ).execute()
             if (response.isSuccessful) return response
             lastCode = response.code
