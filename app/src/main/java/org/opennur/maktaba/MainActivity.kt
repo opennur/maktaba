@@ -1,12 +1,12 @@
-package org.maktaba.app
+package org.opennur.maktaba
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import org.maktaba.app.ui.MaktabaApp
-import org.maktaba.app.ui.MaktabaTheme
+import org.opennur.maktaba.ui.MaktabaApp
+import org.opennur.maktaba.ui.MaktabaTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MaktabaViewModel by viewModels()

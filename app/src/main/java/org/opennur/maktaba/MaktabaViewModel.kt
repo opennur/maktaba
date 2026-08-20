@@ -1,4 +1,4 @@
-package org.maktaba.app
+package org.opennur.maktaba
 
 import android.app.Application
 import android.net.Uri
@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.maktaba.app.data.BookVersionEntity
-import org.maktaba.app.data.CatalogBookRow
-import org.maktaba.app.data.CatalogImportProgress
-import org.maktaba.app.data.MaktabaDatabase
-import org.maktaba.app.data.MaktabaRepository
-import org.maktaba.app.data.OpenItiRepository
-import org.maktaba.app.data.ReaderBlockEntity
-import org.maktaba.app.data.ReaderSearchEntity
+import org.opennur.maktaba.data.BookVersionEntity
+import org.opennur.maktaba.data.CatalogBookRow
+import org.opennur.maktaba.data.CatalogImportProgress
+import org.opennur.maktaba.data.MaktabaDatabase
+import org.opennur.maktaba.data.MaktabaRepository
+import org.opennur.maktaba.data.OpenItiRepository
+import org.opennur.maktaba.data.ReaderBlockEntity
+import org.opennur.maktaba.data.ReaderSearchEntity
 
 sealed interface CatalogState {
     data object Loading : CatalogState

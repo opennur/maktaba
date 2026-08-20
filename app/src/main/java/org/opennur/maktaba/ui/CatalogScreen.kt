@@ -1,4 +1,4 @@
-package org.maktaba.app.ui
+package org.opennur.maktaba.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,9 +36,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.maktaba.app.CatalogState
-import org.maktaba.app.MaktabaViewModel
-import org.maktaba.app.data.CatalogBookRow
+import org.opennur.maktaba.CatalogState
+import org.opennur.maktaba.MaktabaViewModel
+import org.opennur.maktaba.data.CatalogBookRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

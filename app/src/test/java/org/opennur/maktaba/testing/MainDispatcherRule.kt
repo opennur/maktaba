@@ -1,4 +1,4 @@
-package org.maktaba.app.testing
+package org.opennur.maktaba.testing
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

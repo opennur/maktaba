@@ -14,7 +14,7 @@ Retrofit layers:
 ## Test Structure
 
 ```text
-app/src/test/java/org/maktaba/app/
+app/src/test/java/org/opennur/maktaba/
 ├── MaktabaViewModelTest.kt
 ├── testing/MainDispatcherRule.kt
 └── data/
@@ -43,7 +43,7 @@ Run all local JVM tests without an emulator or device:
 Run one test class:
 
 ```shell
-./gradlew :app:testDebugUnitTest --tests "org.maktaba.app.MaktabaViewModelTest"
+./gradlew :app:testDebugUnitTest --tests "org.opennur.maktaba.MaktabaViewModelTest"
 ```
 
 Run the full local quality checks:

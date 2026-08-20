@@ -10,7 +10,7 @@ catalog, cached downloads, an offline reader.
 
 Maktaba `1.0.0` is ready for production packaging.
 
-- Application ID: `org.maktaba.app`
+- Application ID: `org.opennur.maktaba`
 - Minimum Android version: Android 8.0, API 26
 - Compile and target SDK: 35
 - Java and Kotlin target: JVM 17
@@ -108,8 +108,8 @@ attribution requirements.
 
 ## Project Structure
 
-- `app/src/main/java/org/maktaba/app/data`: OpenITI networking, parsing, SQLite persistence, and caching.
-- `app/src/main/java/org/maktaba/app/ui`: Catalog, library, book details, and reader screens.
+- `app/src/main/java/org/opennur/maktaba/data`: OpenITI networking, parsing, SQLite persistence, and caching.
+- `app/src/main/java/org/opennur/maktaba/ui`: Catalog, library, book details, and reader screens.
 - `app/src/test`: Unit tests for catalog parsing, release URL behavior, and text parsing.
 - `app/src/androidTest`: retained Android instrumentation tests for database migrations; currently disabled.
 - `.github/workflows/android.yml`: CI verification and signed release artifact build.

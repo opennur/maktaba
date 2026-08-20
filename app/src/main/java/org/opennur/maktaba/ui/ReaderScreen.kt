@@ -1,4 +1,4 @@
-package org.maktaba.app.ui
+package org.opennur.maktaba.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,11 +59,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import org.maktaba.app.MaktabaViewModel
-import org.maktaba.app.data.BlockKinds
-import org.maktaba.app.data.BookmarkEntity
-import org.maktaba.app.data.ReaderBlockEntity
-import org.maktaba.app.data.ReaderSearchEntity
+import org.opennur.maktaba.MaktabaViewModel
+import org.opennur.maktaba.data.BlockKinds
+import org.opennur.maktaba.data.BookmarkEntity
+import org.opennur.maktaba.data.ReaderBlockEntity
+import org.opennur.maktaba.data.ReaderSearchEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

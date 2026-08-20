@@ -1,4 +1,4 @@
-package org.maktaba.app.ui
+package org.opennur.maktaba.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import org.maktaba.app.MaktabaViewModel
+import org.opennur.maktaba.MaktabaViewModel
 
 private sealed interface Destination {
     data object Home : Destination

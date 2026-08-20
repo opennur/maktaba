@@ -1,4 +1,4 @@
-package org.maktaba.app.data
+package org.opennur.maktaba.data
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider

@@ -1,4 +1,4 @@
-package org.maktaba.app.data
+package org.opennur.maktaba.data
 
 import android.content.ContentValues
 import android.database.Cursor

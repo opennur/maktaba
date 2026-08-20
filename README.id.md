@@ -10,7 +10,7 @@ katalog yang dapat dicari, unduhan tersimpan di cache, pembaca offline.
 
 Maktaba `1.0.0` siap dikemas untuk rilis produksi.
 
-- ID aplikasi: `org.maktaba.app`
+- ID aplikasi: `org.opennur.maktaba`
 - Versi Android minimum: Android 8.0, API 26
 - SDK kompilasi dan target: 35
 - Target Java dan Kotlin: JVM 17
@@ -109,8 +109,8 @@ proyek sumber.
 
 ## Struktur Proyek
 
-- `app/src/main/java/org/maktaba/app/data`: jaringan OpenITI, parsing, penyimpanan SQLite, dan cache.
-- `app/src/main/java/org/maktaba/app/ui`: layar katalog, perpustakaan, detail buku, dan pembaca.
+- `app/src/main/java/org/opennur/maktaba/data`: jaringan OpenITI, parsing, penyimpanan SQLite, dan cache.
+- `app/src/main/java/org/opennur/maktaba/ui`: layar katalog, perpustakaan, detail buku, dan pembaca.
 - `app/src/test`: unit test untuk parsing katalog, perilaku URL rilis, dan parsing teks.
 - `app/src/androidTest`: instrumentation test Android untuk migrasi database yang tetap disimpan tetapi saat ini dinonaktifkan.
 - `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis bertanda tangan.

@@ -1,4 +1,4 @@
-package org.maktaba.app.ui
+package org.opennur.maktaba.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,10 +54,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.maktaba.app.DownloadState
-import org.maktaba.app.MaktabaViewModel
-import org.maktaba.app.data.BookVersionEntity
-import org.maktaba.app.data.OpenItiRelease
+import org.opennur.maktaba.DownloadState
+import org.opennur.maktaba.MaktabaViewModel
+import org.opennur.maktaba.data.BookVersionEntity
+import org.opennur.maktaba.data.OpenItiRelease
 
 private const val SECRET_EXPORT_TAPS = 20
 private const val SECRET_TAP_TIMEOUT_MS = 600L

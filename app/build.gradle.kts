@@ -16,11 +16,11 @@ val hasReleaseSigning = listOf(
 ).all { !it.isNullOrBlank() }
 
 android {
-    namespace = "org.maktaba.app"
+    namespace = "org.opennur.maktaba"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.maktaba.app"
+        applicationId = "org.opennur.maktaba"
         minSdk = 26
         targetSdk = 35
         versionCode = 2
@@ -76,8 +76,8 @@ android {
         unitTests.all { testTask ->
             if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) {
                 testTask.filter {
-                    excludeTestsMatching("org.maktaba.app.data.MaktabaDatabaseRobolectricTest")
-                    excludeTestsMatching("org.maktaba.app.data.OpenItiRepositoryTest")
+                    excludeTestsMatching("org.opennur.maktaba.data.MaktabaDatabaseRobolectricTest")
+                    excludeTestsMatching("org.opennur.maktaba.data.OpenItiRepositoryTest")
                 }
             }
         }

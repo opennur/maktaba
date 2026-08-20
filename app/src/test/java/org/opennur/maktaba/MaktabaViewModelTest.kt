@@ -1,4 +1,4 @@
-package org.maktaba.app
+package org.opennur.maktaba
 
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -7,15 +7,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import org.maktaba.app.data.BookmarkEntity
-import org.maktaba.app.data.BookVersionEntity
-import org.maktaba.app.data.CatalogBookRow
-import org.maktaba.app.data.CatalogImportProgress
-import org.maktaba.app.data.MaktabaRepository
-import org.maktaba.app.data.ReaderBlockEntity
-import org.maktaba.app.data.ReaderSearchEntity
-import org.maktaba.app.data.ReadingProgressEntity
-import org.maktaba.app.testing.MainDispatcherRule
+import org.opennur.maktaba.data.BookmarkEntity
+import org.opennur.maktaba.data.BookVersionEntity
+import org.opennur.maktaba.data.CatalogBookRow
+import org.opennur.maktaba.data.CatalogImportProgress
+import org.opennur.maktaba.data.MaktabaRepository
+import org.opennur.maktaba.data.ReaderBlockEntity
+import org.opennur.maktaba.data.ReaderSearchEntity
+import org.opennur.maktaba.data.ReadingProgressEntity
+import org.opennur.maktaba.testing.MainDispatcherRule
 import java.io.IOException
 import android.app.Application
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -102,7 +102,7 @@ class MaktabaViewModelTest {
         repository.searchResults = expected
 
         val viewModel = viewModel(repository)
-        var actual: List<org.maktaba.app.data.ReaderSearchEntity>? = null
+        var actual: List<org.opennur.maktaba.data.ReaderSearchEntity>? = null
         viewModel.searchInBook("book.version-ara1", "كتاب") { actual = it }
         advanceUntilIdle()
 
