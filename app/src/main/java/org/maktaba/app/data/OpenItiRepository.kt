@@ -45,7 +45,7 @@ object OpenItiRelease {
         val baseName = versionUri.substringAfterLast('/')
             .replace(Regex("[^A-Za-z0-9._-]"), "_")
             .trim { it == '_' || it == '.' }
-        return "${baseName.ifBlank { "book" }}.txt"
+        return baseName.ifBlank { "book" }
     }
 }
 
@@ -188,6 +188,16 @@ class OpenItiRepository(
     suspend fun exportBook(versionUri: String, destination: Uri) = withContext(Dispatchers.IO) {
         val version = bookDao.getVersion(versionUri)
             ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
+        exportVersion(version, destination)
+    }
+
+    suspend fun exportDownloadedBook(bookUri: String, destination: Uri) = withContext(Dispatchers.IO) {
+        val version = bookDao.getDownloadedVersion(bookUri)
+            ?: throw IOException("No downloaded version is available for this book")
+        exportVersion(version, destination)
+    }
+
+    private fun exportVersion(version: BookVersionEntity, destination: Uri) {
         val source = version.downloadPath?.let(::File)
             ?: throw IOException("This book has not been downloaded")
         if (!version.downloaded || !source.isFile || source.length() == 0L) {

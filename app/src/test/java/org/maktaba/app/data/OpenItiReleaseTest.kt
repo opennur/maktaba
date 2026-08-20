@@ -27,9 +27,9 @@ class OpenItiReleaseTest {
     }
 
     @Test
-    fun createsSafeTxtExportName() {
+    fun createsSafeExportNameWithoutExtension() {
         assertEquals(
-            "0100Author.Book.Source001-ara1.txt",
+            "0100Author.Book.Source001-ara1",
             OpenItiRelease.exportFileName("0100Author.Book.Source001-ara1"),
         )
     }

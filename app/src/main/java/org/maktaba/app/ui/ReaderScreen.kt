@@ -1,9 +1,5 @@
 package org.maktaba.app.ui
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +24,6 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
@@ -84,7 +78,6 @@ fun ReaderScreen(
     val bookmarks by bookmarksFlow.collectAsStateWithLifecycle(initialValue = emptyList())
     val progressFlow = remember(versionUri) { viewModel.progress(versionUri) }
     val progress by progressFlow.collectAsStateWithLifecycle(initialValue = null)
-    val context = LocalContext.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val bookmarkedIds = remember(bookmarks) { bookmarks.map(BookmarkEntity::blockId).toSet() }
@@ -145,12 +138,6 @@ fun ReaderScreen(
                         }
                         TextButton(onClick = { fontSize = (fontSize + 1).coerceAtMost(32) }) {
                             Text("A+")
-                        }
-                        IconButton(
-                            onClick = { copyAllReaderText(context, blocks) },
-                            enabled = blocks.isNotEmpty(),
-                        ) {
-                            Icon(Icons.Default.SelectAll, contentDescription = "Select and copy all text")
                         }
                         IconButton(
                             onClick = {
@@ -421,25 +408,6 @@ private fun BookmarkButton(isBookmarked: Boolean, onClick: () -> Unit) {
             tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-private fun copyAllReaderText(context: Context, blocks: List<ReaderBlockEntity>) {
-    val text = buildString {
-        blocks.forEach { block ->
-            val content = when (block.kind) {
-                BlockKinds.HEADING -> "${"#".repeat(block.depth.coerceAtLeast(1))} ${block.title}"
-                BlockKinds.PAGE -> block.pageLabel.orEmpty()
-                else -> block.text
-            }.trim()
-            if (content.isNotEmpty()) {
-                if (isNotEmpty()) append("\n\n")
-                append(content)
-            }
-        }
-    }
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText("Maktaba reader", text))
-    Toast.makeText(context, "All reader text copied", Toast.LENGTH_SHORT).show()
 }
 
 @Composable

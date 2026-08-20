@@ -139,6 +139,17 @@ class MaktabaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun exportDownloadedBook(bookUri: String, destination: Uri, onResult: (Throwable?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.exportDownloadedBook(bookUri, destination)
+                onResult(null)
+            } catch (error: Throwable) {
+                onResult(error)
+            }
+        }
+    }
+
     fun searchInBook(versionUri: String, text: String, onResult: (List<ReaderSearchEntity>) -> Unit) {
         viewModelScope.launch {
             try {

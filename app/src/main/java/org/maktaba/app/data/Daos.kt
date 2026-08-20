@@ -112,6 +112,21 @@ class BookDao(private val database: MaktabaDatabase) {
         }
     }
 
+    suspend fun getDownloadedVersion(bookUri: String): BookVersionEntity? = withContext(Dispatchers.IO) {
+        database.read { sqlite ->
+            sqlite.query(
+                "book_versions",
+                null,
+                "book_uri = ? AND downloaded = 1",
+                arrayOf(bookUri),
+                null,
+                null,
+                "downloaded_at DESC",
+                "1",
+            ).use { cursor -> if (cursor.moveToFirst()) cursor.toBookVersion() else null }
+        }
+    }
+
     fun observeVersions(bookUri: String): Flow<List<BookVersionEntity>> = database.changes
         .map {
             database.read { sqlite ->

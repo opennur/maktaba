@@ -1,8 +1,5 @@
 package org.maktaba.app.ui
 
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,12 +34,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.maktaba.app.DownloadState
 import org.maktaba.app.MaktabaViewModel
 import org.maktaba.app.data.BookVersionEntity
-import org.maktaba.app.data.OpenItiRelease
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,20 +57,6 @@ fun BookDetailScreen(
     val versionsFlow = remember(bookUri) { viewModel.versions(bookUri) }
     val versions by versionsFlow.collectAsStateWithLifecycle()
     val downloadStates by viewModel.downloadStates.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    var pendingExportVersionUri by remember { mutableStateOf<String?>(null) }
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("text/plain"),
-    ) { destination ->
-        val versionUri = pendingExportVersionUri
-        pendingExportVersionUri = null
-        if (destination != null && versionUri != null) {
-            viewModel.exportBook(versionUri, destination) { error ->
-                val message = if (error == null) "Book exported" else "Export failed: ${error.message}"
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            }
-        }
-    }
     val representative = versions.firstOrNull()
 
     Scaffold(
@@ -127,10 +106,6 @@ fun BookDetailScreen(
                     state = downloadStates[version.versionUri] ?: DownloadState.Idle,
                     onDownload = { viewModel.download(version) },
                     onRead = { onRead(version.versionUri) },
-                    onExport = {
-                        pendingExportVersionUri = version.versionUri
-                        exportLauncher.launch(OpenItiRelease.exportFileName(version.versionUri))
-                    },
                 )
             }
         }
@@ -197,7 +172,6 @@ private fun VersionCard(
     state: DownloadState,
     onDownload: () -> Unit,
     onRead: () -> Unit,
-    onExport: () -> Unit,
 ) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
@@ -268,16 +242,10 @@ private fun VersionCard(
                     }
                     DownloadState.Idle, DownloadState.Ready -> {
                         if (version.downloaded || state == DownloadState.Ready) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                TextButton(onClick = onExport) { Text("Export .txt") }
-                                Button(onClick = onRead) {
-                                    Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Read")
-                                }
+                            Button(onClick = onRead) {
+                                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
+                                Spacer(Modifier.width(4.dp))
+                                Text("Read")
                             }
                         } else {
                             OutlinedButton(onClick = onDownload) {
