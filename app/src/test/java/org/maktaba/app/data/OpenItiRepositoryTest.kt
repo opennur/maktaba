@@ -7,6 +7,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -72,6 +73,29 @@ class OpenItiRepositoryTest {
         assertEquals(2, server.requestCount)
         assertEquals("/data/book", server.takeRequest().path)
         assertEquals("/data/book.mARkdown", server.takeRequest().path)
+    }
+
+    @Test
+    fun deletesCachedFileAndKeepsCatalogVersion() = runBlocking {
+        val version = sampleVersion()
+        val cachedFile = File(context.filesDir, "cached-delete-test.mARkdown")
+        cachedFile.writeText("cached text")
+        database.bookDao.insertAll(listOf(version))
+        database.bookDao.setDownloaded(
+            versionUri = version.versionUri,
+            downloaded = true,
+            path = cachedFile.absolutePath,
+            downloadedAt = 123,
+        )
+
+        repository().deleteBook(version.versionUri)
+
+        assertFalse(cachedFile.exists())
+        val stored = database.bookDao.getVersion(version.versionUri)
+        assertTrue(stored != null)
+        assertFalse(stored!!.downloaded)
+        assertEquals(null, stored.downloadPath)
+        assertEquals(version.titleLatin, stored.titleLatin)
     }
 
     private fun repository(): MaktabaRepository = OpenItiRepository(

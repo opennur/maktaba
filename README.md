@@ -26,6 +26,7 @@ release APK.
 - Searches books by title, author, or OpenITI URI.
 - Shows available versions and their metadata.
 - Downloads individual texts into the app's local cache.
+- Deletes downloaded versions from Available versions while keeping bookmarks and reading progress.
 - Provides a local library of downloaded books.
 - Reads cached books offline after download and indexing.
 - Supports right-to-left reading for Arabic, Persian, and Ottoman Turkish texts.

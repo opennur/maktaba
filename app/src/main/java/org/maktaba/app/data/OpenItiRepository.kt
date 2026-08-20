@@ -178,9 +178,17 @@ class OpenItiRepository(
         bookDao.setDownloaded(versionUri, downloaded = true, path = target.absolutePath, downloadedAt = System.currentTimeMillis())
     }
 
-    suspend fun deleteBook(versionUri: String) = withContext(Dispatchers.IO) {
+    override suspend fun deleteBook(versionUri: String) = withContext(Dispatchers.IO) {
         val version = bookDao.getVersion(versionUri)
-        version?.downloadPath?.let { File(it).delete() }
+            ?: throw IllegalArgumentException("Unknown OpenITI version: $versionUri")
+        val target = version.downloadPath?.let(::File) ?: File(bookDirectory, fileNameFor(versionUri))
+        if (target.exists() && !target.delete()) {
+            throw IOException("Could not delete downloaded text")
+        }
+        val temporary = File(bookDirectory, "${fileNameFor(versionUri)}.part")
+        if (temporary.exists() && !temporary.delete()) {
+            throw IOException("Could not delete incomplete download")
+        }
         readerDao.deleteBlocks(versionUri)
         readerDao.deleteSearchRows(versionUri)
         bookDao.setDownloaded(versionUri, downloaded = false, path = null, downloadedAt = null)

@@ -74,6 +74,21 @@ class MaktabaViewModelTest {
     }
 
     @Test
+    fun deletesBookAndClearsItsDownloadState() = runTest {
+        val repository = repository()
+        val version = sampleVersion()
+        val viewModel = viewModel(repository)
+        viewModel.download(version)
+        advanceUntilIdle()
+
+        viewModel.deleteBook(version.versionUri)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.downloadStates.value[version.versionUri] == null)
+        assertEquals(1, repository.deleteCalls)
+    }
+
+    @Test
     fun returnsSearchResultsFromRepository() = runTest {
         val repository = repository()
         val expected = listOf(
@@ -126,6 +141,7 @@ private class FakeMaktabaRepository : MaktabaRepository {
     var ensureFailure: Throwable? = null
     var downloadFailure: Throwable? = null
     var searchResults: List<ReaderSearchEntity> = emptyList()
+    var deleteCalls = 0
 
     override fun observeCatalog(query: String) = flowOf(emptyList<CatalogBookRow>())
 
@@ -151,6 +167,10 @@ private class FakeMaktabaRepository : MaktabaRepository {
     ) {
         downloadFailure?.let { throw it }
         onProgress(50, 100)
+    }
+
+    override suspend fun deleteBook(versionUri: String) {
+        deleteCalls += 1
     }
 
     override suspend fun exportBook(versionUri: String, destination: android.net.Uri) = Unit

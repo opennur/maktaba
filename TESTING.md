@@ -70,5 +70,6 @@ database test again on an Android 35 emulator.
 - OpenITI mARkdown headings, paragraphs, continuation lines, metadata, and pages.
 - Arabic normalization and FTS query generation.
 - ViewModel loading, errors, download state, and search callbacks.
+- Delete flow removes cached content while preserving the catalog version.
 - Database migration without deleting existing rows.
 - Catalog import and download fallback paths through MockWebServer.

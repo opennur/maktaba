@@ -25,6 +25,8 @@ interface MaktabaRepository {
         onProgress: (bytesRead: Long, totalBytes: Long) -> Unit = { _, _ -> },
     )
 
+    suspend fun deleteBook(versionUri: String)
+
     suspend fun exportBook(versionUri: String, destination: Uri)
 
     suspend fun exportDownloadedBook(bookUri: String, destination: Uri)

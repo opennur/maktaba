@@ -26,6 +26,7 @@ mendistribusikan APK rilis.
 - Mencari buku berdasarkan judul, penulis, atau URI OpenITI.
 - Menampilkan versi yang tersedia beserta metadatanya.
 - Mengunduh teks individual ke cache lokal aplikasi.
+- Menghapus versi yang telah diunduh dari Available versions sambil mempertahankan bookmark dan kemajuan membaca.
 - Menyediakan perpustakaan lokal untuk buku yang telah diunduh.
 - Membaca buku yang tersimpan secara offline setelah diunduh dan diindeks.
 - Mendukung pembacaan dari kanan ke kiri untuk teks Arab, Persia, dan Turki Utsmani.

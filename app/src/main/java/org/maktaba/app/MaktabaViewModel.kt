@@ -134,6 +134,18 @@ class MaktabaViewModel(
         downloadJobs[version.versionUri] = job
     }
 
+    fun deleteBook(versionUri: String, onResult: (Throwable?) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                repository.deleteBook(versionUri)
+                _downloadStates.value = _downloadStates.value - versionUri
+                onResult(null)
+            } catch (error: Throwable) {
+                onResult(error)
+            }
+        }
+    }
+
     fun exportBook(versionUri: String, destination: Uri, onResult: (Throwable?) -> Unit) {
         viewModelScope.launch {
             try {

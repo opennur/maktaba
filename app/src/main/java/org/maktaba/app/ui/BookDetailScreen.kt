@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -74,6 +75,8 @@ fun BookDetailScreen(
     val downloadStates by viewModel.downloadStates.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var pendingExportVersionUri by remember { mutableStateOf<String?>(null) }
+    var deleteVersionUri by remember { mutableStateOf<String?>(null) }
+    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
     var tapVersionUri by remember { mutableStateOf<String?>(null) }
     var tapCount by remember { mutableIntStateOf(0) }
     var tapResetJob by remember { mutableStateOf<Job?>(null) }
@@ -110,6 +113,42 @@ fun BookDetailScreen(
         }
     }
     val representative = versions.firstOrNull()
+
+    deleteVersionUri?.let { versionUriToDelete ->
+        AlertDialog(
+            onDismissRequest = { deleteVersionUri = null },
+            title = { Text("Delete downloaded book?") },
+            text = {
+                Text("The downloaded text and reader index will be removed. Bookmarks and reading progress will be kept.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleteVersionUri = null
+                        viewModel.deleteBook(versionUriToDelete) { error ->
+                            deleteErrorMessage = error?.message
+                        }
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteVersionUri = null }) { Text("Cancel") }
+            },
+        )
+    }
+
+    deleteErrorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { deleteErrorMessage = null },
+            title = { Text("Could not delete book") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { deleteErrorMessage = null }) { Text("OK") }
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -158,6 +197,7 @@ fun BookDetailScreen(
                     state = downloadStates[version.versionUri] ?: DownloadState.Idle,
                     onDownload = { viewModel.download(version) },
                     onRead = { onRead(version.versionUri) },
+                    onDelete = { deleteVersionUri = version.versionUri },
                     onSecretTap = { handleVersionTap(version.versionUri) },
                 )
             }
@@ -225,6 +265,7 @@ private fun VersionCard(
     state: DownloadState,
     onDownload: () -> Unit,
     onRead: () -> Unit,
+    onDelete: () -> Unit,
     onSecretTap: () -> Unit,
 ) {
     Card(
@@ -305,10 +346,18 @@ private fun VersionCard(
                     }
                     DownloadState.Idle, DownloadState.Ready -> {
                         if (version.downloaded || state == DownloadState.Ready) {
-                            Button(onClick = onRead) {
-                                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
-                                Spacer(Modifier.width(4.dp))
-                                Text("Read")
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (version.downloaded) {
+                                    TextButton(onClick = onDelete) { Text("Delete") }
+                                }
+                                Button(onClick = onRead) {
+                                    Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Read")
+                                }
                             }
                         } else {
                             OutlinedButton(onClick = onDownload) {
