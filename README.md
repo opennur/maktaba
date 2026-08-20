@@ -96,7 +96,7 @@ Maktaba_RELEASE_KEY_PASSWORD=...
 - Run unit tests, lint, instrumentation-test compilation, and the release build.
 - Verify an upgrade with existing catalog, downloads, bookmarks, and progress data.
 - Verify first-launch catalog import and catalog refresh.
-- Verify download, offline reading, search, bookmarks, progress, text selection, and the hidden 20-tap export gesture.
+- Verify download, offline reading, search, bookmarks, progress, text selection.
 - Confirm attribution and distribution requirements for the OpenITI data release.
 - Publish the privacy notice from [PRIVACY.md](PRIVACY.md) and attribution from [NOTICE.md](NOTICE.md).
 
