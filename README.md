@@ -6,6 +6,13 @@ Maktaba is a production-ready Android reader for the
 [OpenITI](https://github.com/OpenITI/RELEASE) corpus. It provides a searchable
 catalog, cached downloads, an offline reader.
 
+<img width="240" height="480" alt="1000023441" src="https://github.com/user-attachments/assets/73fa312c-ef22-4026-811e-6a347e05954a" />
+
+<img width="240" height="480" alt="1000023441" src="https://github.com/user-attachments/assets/2b8c3204-9592-4b6f-8c26-610e7bf27be5" />
+
+<img width="240" height="480" alt="1000023443" src="https://github.com/user-attachments/assets/03bd4c50-1a30-427a-92c3-fdd60f9f4db7" />
+
+
 ## Release Status
 
 Maktaba `1.0.0` is ready for production packaging.
