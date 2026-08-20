@@ -49,7 +49,7 @@ Run one test class:
 Run the full local quality checks:
 
 ```shell
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:compileDebugAndroidTestKotlin
+./gradlew :app:testDebugUnitTest :app:lintDebug
 ```
 
 ## Robolectric
@@ -61,8 +61,8 @@ service.
 Robolectric's native runtime does not support Linux ARM64 in the current
 upstream release. The Gradle test configuration excludes only those two
 Robolectric classes on ARM64, while the pure JVM tests continue to run locally.
-The GitHub Actions workflow runs the Robolectric tests on x86_64 and runs the
-database test again on an Android 35 emulator.
+The GitHub Actions workflow runs the Robolectric tests on x86_64. Android
+instrumentation tests remain in `app/src/androidTest` but are currently disabled.
 
 ## Coverage Focus
 

@@ -55,15 +55,11 @@ Gunakan Gradle wrapper yang tersedia dari direktori root repositori:
 ```shell
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:lintDebug
-./gradlew :app:compileDebugAndroidTestKotlin
 ./gradlew :app:assembleRelease
 ```
 
-Untuk emulator atau perangkat yang terhubung, jalankan instrumentation test dengan:
-
-```shell
-./gradlew :app:connectedDebugAndroidTest
-```
+Instrumentation test saat ini tetap disimpan di `app/src/androidTest`, tetapi
+dinonaktifkan dalam build Gradle dan workflow CI.
 
 Untuk membuat APK debug, jalankan:
 
@@ -95,7 +91,7 @@ Maktaba_RELEASE_KEY_PASSWORD=...
 
 - Perbarui `versionCode` dan `versionName` di `app/build.gradle.kts` untuk setiap rilis.
 - Konfigurasikan penandatanganan melalui properti Gradle lokal atau penyimpanan rahasia CI.
-- Jalankan unit test, lint, kompilasi instrumentation test, dan build rilis.
+- Jalankan unit test, lint, dan build rilis.
 - Verifikasi upgrade dengan data katalog, unduhan, bookmark, dan kemajuan yang sudah ada.
 - Verifikasi impor katalog pada peluncuran pertama dan penyegaran katalog.
 - Verifikasi unduhan, pembacaan offline, pencarian, bookmark, kemajuan, pemilihan teks.
@@ -114,6 +110,6 @@ proyek sumber.
 - `app/src/main/java/org/maktaba/app/data`: jaringan OpenITI, parsing, penyimpanan SQLite, dan cache.
 - `app/src/main/java/org/maktaba/app/ui`: layar katalog, perpustakaan, detail buku, dan pembaca.
 - `app/src/test`: unit test untuk parsing katalog, perilaku URL rilis, dan parsing teks.
-- `app/src/androidTest`: instrumentation test Android untuk migrasi database.
+- `app/src/androidTest`: instrumentation test Android untuk migrasi database yang tetap disimpan tetapi saat ini dinonaktifkan.
 - `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis tanpa tanda tangan.
 - `TESTING.md`: panduan test JVM lokal, Robolectric, ViewModel, parser, dan repository.

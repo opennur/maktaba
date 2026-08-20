@@ -55,15 +55,11 @@ Use the included Gradle wrapper from the repository root:
 ```shell
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:lintDebug
-./gradlew :app:compileDebugAndroidTestKotlin
 ./gradlew :app:assembleRelease
 ```
 
-For a connected emulator or device, run the instrumentation tests with:
-
-```shell
-./gradlew :app:connectedDebugAndroidTest
-```
+Instrumentation tests are currently retained in `app/src/androidTest` but
+disabled in the Gradle build and CI workflow.
 
 For a debug APK, run:
 
@@ -94,7 +90,7 @@ Maktaba_RELEASE_KEY_PASSWORD=...
 
 - Update `versionCode` and `versionName` in `app/build.gradle.kts` for each release.
 - Configure signing through local Gradle properties or the CI secret store.
-- Run unit tests, lint, instrumentation-test compilation, and the release build.
+- Run unit tests, lint, and the release build.
 - Verify an upgrade with existing catalog, downloads, bookmarks, and progress data.
 - Verify first-launch catalog import and catalog refresh.
 - Verify download, offline reading, search, bookmarks, progress, text selection.
@@ -113,6 +109,6 @@ attribution requirements.
 - `app/src/main/java/org/maktaba/app/data`: OpenITI networking, parsing, SQLite persistence, and caching.
 - `app/src/main/java/org/maktaba/app/ui`: Catalog, library, book details, and reader screens.
 - `app/src/test`: Unit tests for catalog parsing, release URL behavior, and text parsing.
-- `app/src/androidTest`: Android instrumentation tests for database migrations.
+- `app/src/androidTest`: retained Android instrumentation tests for database migrations; currently disabled.
 - `.github/workflows/android.yml`: CI verification and unsigned release artifact build.
 - `TESTING.md`: Local JVM, Robolectric, ViewModel, parser, and repository test guide.

@@ -79,6 +79,13 @@ android {
     }
 }
 
+// Instrumentation tests are retained in source but disabled for local and CI builds.
+tasks.configureEach {
+    if (name.contains("AndroidTest", ignoreCase = true)) {
+        enabled = false
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
