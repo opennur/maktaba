@@ -17,8 +17,9 @@ Maktaba `1.0.0` is ready for production packaging.
 - OpenITI release: `v2025.1.9`
 - Release builds use R8 and resource shrinking.
 
-Configure production signing outside the repository before distributing the
-release APK.
+Release builds are always signed. Configure a production signing key outside
+the repository before distributing the APK; without one, local and CI builds
+use the Android debug key as an installable fallback.
 
 ## Features
 
@@ -69,15 +70,16 @@ For a debug APK, run:
 
 ## Release Artifacts
 
-- Current unsigned release APK: `app/build/outputs/apk/release/app-release-unsigned.apk`
+- Current signed release APK: `app/build/outputs/apk/release/app-release.apk`
 - Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 
 Before distribution, configure the release signing key, build the release
 variant, and verify the signed APK on a clean Android installation. A signed
 build will normally be written as `app-release.apk`.
 
-The release signing configuration is optional in local builds. Set these Gradle
-properties in a user-level `~/.gradle/gradle.properties` file or in CI secrets:
+Production release signing is optional for local builds. Set these Gradle
+properties in a user-level `~/.gradle/gradle.properties` file or in CI secrets
+to replace the debug fallback:
 
 ```properties
 Maktaba_RELEASE_STORE_FILE=/absolute/path/to/maktaba-release.jks
@@ -110,5 +112,5 @@ attribution requirements.
 - `app/src/main/java/org/maktaba/app/ui`: Catalog, library, book details, and reader screens.
 - `app/src/test`: Unit tests for catalog parsing, release URL behavior, and text parsing.
 - `app/src/androidTest`: retained Android instrumentation tests for database migrations; currently disabled.
-- `.github/workflows/android.yml`: CI verification and unsigned release artifact build.
+- `.github/workflows/android.yml`: CI verification and signed release artifact build.
 - `TESTING.md`: Local JVM, Robolectric, ViewModel, parser, and repository test guide.

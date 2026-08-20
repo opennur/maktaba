@@ -17,8 +17,9 @@ Maktaba `1.0.0` siap dikemas untuk rilis produksi.
 - Rilis OpenITI: `v2025.1.9`
 - Build rilis menggunakan R8 dan resource shrinking.
 
-Konfigurasikan penandatanganan produksi di luar repositori sebelum
-mendistribusikan APK rilis.
+Build rilis selalu ditandatangani. Konfigurasikan kunci signing produksi di
+luar repositori sebelum mendistribusikan APK; tanpa kunci tersebut, build lokal
+dan CI menggunakan kunci debug Android sebagai fallback yang dapat diinstal.
 
 ## Fitur
 
@@ -69,7 +70,7 @@ Untuk membuat APK debug, jalankan:
 
 ## Artefak Rilis
 
-- APK rilis tanpa tanda tangan saat ini: `app/build/outputs/apk/release/app-release-unsigned.apk`
+- APK rilis bertanda tangan saat ini: `app/build/outputs/apk/release/app-release.apk`
 - APK debug: `app/build/outputs/apk/debug/app-debug.apk`
 
 Sebelum distribusi, konfigurasikan kunci penandatanganan rilis, buat varian
@@ -77,8 +78,9 @@ rilis, dan verifikasi APK yang telah ditandatangani pada instalasi Android yang
 bersih. Build yang telah ditandatangani biasanya akan ditulis sebagai
 `app-release.apk`.
 
-Konfigurasi penandatanganan rilis bersifat opsional untuk build lokal. Simpan
-properti berikut di `~/.gradle/gradle.properties` milik pengguna atau di secret CI:
+Konfigurasi penandatanganan produksi bersifat opsional untuk build lokal.
+Simpan properti berikut di `~/.gradle/gradle.properties` milik pengguna atau di
+secret CI untuk menggantikan fallback kunci debug:
 
 ```properties
 Maktaba_RELEASE_STORE_FILE=/absolute/path/to/maktaba-release.jks
@@ -111,5 +113,5 @@ proyek sumber.
 - `app/src/main/java/org/maktaba/app/ui`: layar katalog, perpustakaan, detail buku, dan pembaca.
 - `app/src/test`: unit test untuk parsing katalog, perilaku URL rilis, dan parsing teks.
 - `app/src/androidTest`: instrumentation test Android untuk migrasi database yang tetap disimpan tetapi saat ini dinonaktifkan.
-- `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis tanpa tanda tangan.
+- `.github/workflows/android.yml`: verifikasi CI dan build artefak rilis bertanda tangan.
 - `TESTING.md`: panduan test JVM lokal, Robolectric, ViewModel, parser, dan repository.
