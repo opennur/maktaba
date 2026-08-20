@@ -81,7 +81,9 @@ android {
 
 // Instrumentation tests are retained in source but disabled for local and CI builds.
 tasks.configureEach {
-    if (name.contains("AndroidTest", ignoreCase = true)) {
+    if (name.contains("AndroidTest", ignoreCase = true) &&
+        !name.contains("Lint", ignoreCase = true)
+    ) {
         enabled = false
     }
 }
